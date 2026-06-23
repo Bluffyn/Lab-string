@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Guitar, cuatro, harmony, fretboard, and loop-pedal practice lab.">
+  <meta name="theme-color" content="#111827">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="String Lab">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>String Lab</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icon-180.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark">SL</span>
+      <div>
+        <h1>String Lab</h1>
+        <p>Guitar and Puerto Rican cuatro practice</p>
+      </div>
+    </div>
+    <div class="metronome" aria-label="Metronome">
+      <button id="metroToggle" class="icon-button" type="button" aria-label="Start metronome">Play</button>
+      <button id="metroMinus" class="stepper" type="button" aria-label="Decrease BPM">-</button>
+      <strong><span id="metroBpm">90</span> BPM</strong>
+      <button id="metroPlus" class="stepper" type="button" aria-label="Increase BPM">+</button>
+      <input id="metroSlider" type="range" min="40" max="220" value="90" aria-label="BPM">
+      <select id="metroSignature" aria-label="Time signature">
+        <option value="4">4/4</option>
+        <option value="3">3/4</option>
+        <option value="6">6/8</option>
+      </select>
+      <div id="metroDots" class="beat-dots" aria-hidden="true"></div>
+    </div>
+  </header>
+
+  <nav class="tabbar" role="tablist" aria-label="Main sections">
+    <button class="is-active" data-tab="practice" type="button">Practice</button>
+    <button data-tab="progressions" type="button">Progressions</button>
+    <button data-tab="loop-companion" type="button">Loop Companion</button>
+    <button data-tab="caged" type="button">Guitar CAGED</button>
+    <button data-tab="cuatro" type="button">Cuatro</button>
+    <button data-tab="aerobics" type="button">Aerobics</button>
+  </nav>
+
+  <section class="utility-strip" aria-label="App status and data tools">
+    <span id="networkStatus" class="network-status" role="status">Offline mode</span>
+    <div class="data-actions">
+      <button id="exportData" type="button">Export data</button>
+      <button id="importData" type="button">Import data</button>
+      <input id="importDataFile" type="file" accept="application/json" hidden>
+    </div>
+  </section>
+
+  <main>
+    <section id="practice" class="workspace is-active">
+      <div class="control-strip">
+        <label>Instrument<select id="practiceInstrument"></select></label>
+        <div class="segmented">
+          <button class="is-active" data-practice-mode="notes" type="button">Notes</button>
+          <button data-practice-mode="chords" type="button">Chord tones</button>
+          <button data-practice-mode="scales" type="button">Scales</button>
+        </div>
+        <label>Root<select id="practiceRoot"></select></label>
+        <label>Chord<select id="practiceChord"></select></label>
+        <label>Scale<select id="practiceScale"></select></label>
+        <div class="segmented range-control" aria-label="Practice fret range">
+          <button data-practice-frets="5" type="button">0-5</button>
+          <button data-practice-frets="12" type="button">0-12</button>
+          <button class="is-active" data-practice-frets="all" type="button">All</button>
+        </div>
+        <label class="toggle"><input id="practiceShowAllNotes" type="checkbox"><span>All notes</span></label>
+        <button id="practiceNew" type="button">New</button>
+        <button id="practiceReveal" type="button">Reveal</button>
+        <button id="practiceCheck" type="button">Check</button>
+      </div>
+      <div class="status-row">
+        <strong>Target: <span id="practiceTarget"></span></strong>
+        <span>Score <b id="practiceScore">0</b></span>
+        <span>Streak <b id="practiceStreak">0</b></span>
+      </div>
+      <div id="practiceBoard" class="fretboard-wrap"></div>
+      <div id="practiceVoicings" class="below-board-grid"></div>
+    </section>
+
+    <section id="progressions" class="workspace">
+      <div class="control-strip">
+        <label>Instrument<select id="loopInstrument"></select></label>
+        <label>Genre<select id="progressionGenre"></select></label>
+        <label>Key<select id="progressionKey"></select></label>
+        <label>Progression<select id="progressionSelect"></select></label>
+        <label>Difficulty<select id="loopDifficulty"></select></label>
+        <button id="progressionPlay" type="button">Play progression</button>
+        <button id="progressionStop" type="button">Stop</button>
+      </div>
+      <textarea id="customProgression" rows="2" placeholder="Custom chords: Cmaj7 Dm7 G7 Cmaj7"></textarea>
+      <div class="practice-layout">
+        <section class="practice-panel">
+          <h2 id="progressionTitle">Progression</h2>
+          <p id="progressionRoman" class="roman-line"></p>
+          <p id="progressionPlaybackStatus" class="roman-line"></p>
+          <div id="progressionChords" class="progression-strip"></div>
+          <div id="scaleSuggestions" class="suggestion-grid"></div>
+        </section>
+      </div>
+      <div id="progressionVoicingGroups" class="below-board-grid"></div>
+    </section>
+
+    <section id="loop-companion" class="workspace">
+      <div class="control-strip">
+        <label>Instrument<select id="loopCompInstrument"></select></label>
+        <label>Genre<select id="loopCompGenre"></select></label>
+        <label>Key<select id="loopCompKey"></select></label>
+        <label>Difficulty<select id="loopCompDifficulty"></select></label>
+        <label>Scale focus<select id="loopCompScale"></select></label>
+        <label>Bars<select id="loopCompBars"></select></label>
+        <label>Tempo<input id="loopCompTempo" type="number" min="40" max="220" value="90"></label>
+        <button id="loopTempoMinus" class="stepper" type="button" aria-label="Decrease loop tempo">-</button>
+        <button id="loopTempoPlus" class="stepper" type="button" aria-label="Increase loop tempo">+</button>
+        <button id="loopTapTempo" type="button">Tap tempo</button>
+      </div>
+      <div class="control-strip">
+        <div class="segmented range-control" aria-label="Loop Companion fret range">
+          <button data-loop-frets="5" type="button">0-5</button>
+          <button class="is-active" data-loop-frets="12" type="button">0-12</button>
+          <button data-loop-frets="all" type="button">All</button>
+        </div>
+        <label class="toggle"><input id="loopShowAllNotes" type="checkbox"><span>All notes</span></label>
+        <label>Subdivision<select id="loopCompSubdivision"></select></label>
+        <button id="loopMetroToggle" class="icon-button" type="button" aria-label="Start Loop Companion click">Start click</button>
+        <div id="loopBeatDots" class="beat-dots" aria-hidden="true"></div>
+      </div>
+      <div class="loop-actions">
+        <button id="loopGenerate" type="button">Generate Plan</button>
+        <button id="loopRegenProgression" type="button">Regenerate Progression</button>
+        <button id="loopRegenRhythm" type="button">Regenerate Rhythm</button>
+        <button id="loopRegenLead" type="button">Regenerate Lead Exercise</button>
+        <button id="loopSave" type="button">Save Plan</button>
+        <button id="loopPlayProgression" type="button">Play MIDI</button>
+        <button id="loopStopProgression" type="button">Stop MIDI</button>
+        <button id="loopExportCard" type="button">Export Card</button>
+        <button id="loopExportJson" type="button">Export JSON</button>
+        <button id="loopExportMidi" type="button">Export MIDI</button>
+      </div>
+      <div class="status-row">
+        <strong id="loopPlanTitle">Loop Companion</strong>
+        <span id="loopPlanMeta"></span>
+        <span id="loopSaveStatus"></span>
+        <span id="loopPlaybackStatus"></span>
+      </div>
+      <div class="loop-grid">
+        <section class="practice-panel loop-plan-panel">
+          <h2>Progression</h2>
+          <div id="loopProgressionCards" class="progression-strip"></div>
+          <div class="loop-scale-card">
+            <strong id="loopSuggestedScale"></strong>
+            <span id="loopScaleHint"></span>
+          </div>
+          <h2>Target notes</h2>
+          <div id="loopTargets" class="target-grid"></div>
+        </section>
+        <section class="practice-panel">
+          <h2>Comping</h2>
+          <div id="loopCompingPattern" class="pattern-card"></div>
+          <h2>Lead exercise</h2>
+          <div id="loopLeadExercise" class="lead-card"></div>
+        </section>
+      </div>
+      <div id="loopFretboard" class="fretboard-wrap"></div>
+      <div class="loop-grid loop-secondary">
+        <section class="practice-panel">
+          <h2>Saved plans</h2>
+          <div id="loopSavedPlans" class="saved-plan-list"></div>
+        </section>
+        <section class="practice-panel">
+          <h2>JSON preview</h2>
+          <pre id="loopPlanJsonPreview" class="json-preview"></pre>
+        </section>
+      </div>
+    </section>
+
+    <section id="caged" class="workspace">
+      <div class="control-strip">
+        <label>Root<select id="cagedRoot"></select></label>
+        <label>Shape<select id="cagedShape"></select></label>
+        <label>Mode<select id="cagedMode"></select></label>
+        <label>Scale<select id="cagedScale"></select></label>
+        <div class="segmented range-control" aria-label="CAGED fret range">
+          <button data-caged-frets="5" type="button">0-5</button>
+          <button data-caged-frets="12" type="button">0-12</button>
+          <button class="is-active" data-caged-frets="all" type="button">All</button>
+        </div>
+        <label class="toggle"><input id="cagedShowAllNotes" type="checkbox"><span>All notes</span></label>
+      </div>
+      <div class="status-row">
+        <strong id="cagedTitle"></strong>
+        <span id="cagedRangeLabel">Frets 0-24</span>
+      </div>
+      <div id="cagedBoard" class="fretboard-wrap"></div>
+      <div id="cagedPositions" class="position-grid"></div>
+      <h2>Open chords</h2>
+      <div id="cagedOpenChords" class="diagram-grid"></div>
+    </section>
+
+    <section id="cuatro" class="workspace">
+      <div class="control-strip">
+        <label>Root<select id="cuatroRoot"></select></label>
+        <label>Chord<select id="cuatroChord"></select></label>
+        <label>Scale<select id="cuatroScale"></select></label>
+        <label>Inversion<select id="cuatroInversion"></select></label>
+        <div class="segmented range-control" aria-label="Cuatro fret range">
+          <button data-cuatro-frets="5" type="button">0-5</button>
+          <button data-cuatro-frets="12" type="button">0-12</button>
+          <button class="is-active" data-cuatro-frets="all" type="button">All</button>
+        </div>
+        <label class="toggle"><input id="cuatroShowAllNotes" type="checkbox"><span>All notes</span></label>
+      </div>
+      <div class="status-row">
+        <strong id="cuatroChordName"></strong>
+        <span id="cuatroFormula"></span>
+        <span id="cuatroTones"></span>
+      </div>
+      <p id="cuatroCourseInfo" class="roman-line"></p>
+      <div id="cuatroBoard" class="fretboard-wrap"></div>
+      <div class="two-column">
+        <section>
+          <h2>Voicings</h2>
+          <div id="cuatroVoicings" class="below-board-grid"></div>
+        </section>
+        <section class="translate-panel">
+          <h2>Translate guitar chord to cuatro</h2>
+          <label class="wide-label">Guitar chord<input id="translateChord" value="G7"></label>
+          <div id="translateResults" class="voicing-card-grid"></div>
+        </section>
+      </div>
+    </section>
+
+    <section id="aerobics" class="workspace">
+      <div class="control-strip">
+        <label>Instrument<select id="aerobicsInstrument">
+          <option value="all">Guitar + Cuatro</option>
+          <option value="guitar">Guitar</option>
+          <option value="cuatro">Cuatro</option>
+        </select></label>
+        <button id="aerobicsRandom" type="button">Random exercise</button>
+        <button id="workout10" type="button">10 min</button>
+        <button id="workout20" type="button">20 min</button>
+        <button id="workout30" type="button">30 min</button>
+        <button id="markComplete" type="button">Mark complete</button>
+      </div>
+      <div class="status-row">
+        <strong>Technique aerobics</strong>
+        <span id="aerobicsProgress"></span>
+      </div>
+      <div class="aerobics-stack">
+        <section id="aerobicExercise" class="exercise-card"></section>
+        <aside id="dailyWorkout" class="daily-card"></aside>
+      </div>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>

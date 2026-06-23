@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="String Lab">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Install String Lab on iPad</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icon-180.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="install-page">
+    <section class="practice-panel">
+      <div class="brand install-brand">
+        <span class="brand-mark">SL</span>
+        <div>
+          <h1>Install String Lab</h1>
+          <p>Offline guitar and Puerto Rican cuatro practice for iPad.</p>
+        </div>
+      </div>
+      <ol class="install-steps">
+        <li>Open this page in Safari on the iPad.</li>
+        <li>Tap the Share button.</li>
+        <li>Choose Add to Home Screen.</li>
+        <li>Open String Lab from the Home Screen once while online.</li>
+        <li>Open each tab once, then test in Airplane Mode.</li>
+      </ol>
+      <p><a class="launch-link" href="./index.html">Open String Lab</a></p>
+    </section>
+  </main>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("./service-worker.js");
+      });
+    }
+  </script>
+</body>
+</html>
